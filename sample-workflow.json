@@ -1,106 +1,19 @@
 {
-  "name": "YouTube URL to AI Notes (Gemini → Google Drive)",
-  "nodes": [
-    {
-      "id": "1",
-      "name": "Webhook Trigger",
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 1,
-      "position": [200, 300],
-      "parameters": {
-        "path": "youtube-notes",
-        "httpMethod": "POST",
-        "responseMode": "onReceived",
-        "responseData": "Workflow started"
-      }
-    },
-    {
-      "id": "2",
-      "name": "Prepare Prompt",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 2,
-      "position": [450, 300],
-      "parameters": {
-        "values": {
-          "string": [
-            {
-              "name": "prompt",
-              "value": "Create detailed, structured study notes from this YouTube video. Use headings, bullet points, and examples. YouTube URL: {{$json[\"url\"]}}"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "id": "3",
-      "name": "Gemini AI",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
-      "position": [700, 300],
-      "parameters": {
-        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
-        "method": "POST",
-        "responseFormat": "json",
-        "jsonParameters": true,
-        "bodyParametersJson": "={\"contents\":[{\"parts\":[{\"text\":\"{{$json[\"prompt\"]}}\"}]}]}"
-      },
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "GEMINI_API_KEY",
-          "name": "Gemini API Key"
-        }
-      }
-    },
-    {
-      "id": "4",
-      "name": "Extract Notes",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 2,
-      "position": [950, 300],
-      "parameters": {
-        "values": {
-          "string": [
-            {
-              "name": "notes",
-              "value": "={{$json[\"candidates\"][0][\"content\"][\"parts\"][0][\"text\"]}}"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "id": "5",
-      "name": "Upload to Google Drive",
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
-      "position": [1200, 300],
-      "parameters": {
-        "operation": "upload",
-        "name": "YouTube_AI_Notes.txt",
-        "parents": [],
-        "fileContent": "={{$json[\"notes\"]}}"
-      },
-      "credentials": {
-        "googleDriveOAuth2": {
-          "id": "GOOGLE_DRIVE_OAUTH",
-          "name": "Google Drive OAuth"
-        }
-      }
-    }
-  ],
-  "connections": {
-    "Webhook Trigger": {
-      "main": [[{ "node": "Prepare Prompt", "type": "main", "index": 0 }]]
-    },
-    "Prepare Prompt": {
-      "main": [[{ "node": "Gemini AI", "type": "main", "index": 0 }]]
-    },
-    "Gemini AI": {
-      "main": [[{ "node": "Extract Notes", "type": "main", "index": 0 }]]
-    },
-    "Extract Notes": {
-      "main": [[{ "node": "Upload to Google Drive", "type": "main", "index": 0 }]]
-    }
+  "id": "3",
+  "name": "Gemini 2.5 Flash",
+  "type": "n8n-nodes-base.httpRequest",
+  "typeVersion": 4,
+  "position": [700, 300],
+  "parameters": {
+    "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+    "method": "POST",
+    "responseFormat": "json",
+    "jsonParameters": true,
+    "bodyParametersJson": "={\"contents\":[{\"parts\":[{\"text\":\"{{$json[\"prompt\"]}}\"}]}]}"
   },
-  "active": false
+  "credentials": {
+    "httpHeaderAuth": {
+      "name": "Gemini 2.5 Flash"
+    }
+  }
 }
