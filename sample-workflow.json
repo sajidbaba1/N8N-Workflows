@@ -1,89 +1,87 @@
 {
-  "name": "YouTube URL to AI Notes (Gemini → Google Drive)",
+  "name": "YouTube URL to AI Notes (Fixed)",
   "nodes": [
     {
+      "parameters": {
+        "path": "youtube-notes",
+        "options": {},
+        "responseData": "Workflow started. Check Google Drive in a few moments."
+      },
       "id": "1",
       "name": "Webhook Trigger",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [200, 300],
-      "parameters": {
-        "path": "youtube-notes",
-        "httpMethod": "POST",
-        "responseMode": "onReceived",
-        "responseData": "Workflow started"
-      }
+      "position": [200, 300]
     },
     {
-      "id": "2",
-      "name": "Prepare Prompt",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 2,
-      "position": [450, 300],
       "parameters": {
         "values": {
           "string": [
             {
               "name": "prompt",
-              "value": "Create detailed, structured study notes from this YouTube video. Use headings, bullet points, and examples. YouTube URL: {{$json[\"url\"]}}"
+              "value": "={{ 'Create detailed, structured study notes from this YouTube video. Use headings, bullet points, and examples. YouTube URL: ' + $json.url }}"
             }
           ]
-        }
-      }
-    },
-   {
-  "id": "3",
-  "name": "Gemini 2.5 Flash",
-  "type": "n8n-nodes-base.httpRequest",
-  "typeVersion": 4,
-  "position": [700, 300],
-  "parameters": {
-    "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
-    "method": "POST",
-    "responseFormat": "json",
-    "jsonParameters": true,
-    "bodyParametersJson": "={\"contents\":[{\"parts\":[{\"text\":\"{{$json[\"prompt\"]}}\"}]}]}"
-  },
-  "credentials": {
-    "httpHeaderAuth": {
-      "name": "Gemini 2.5 Flash"
-    }
-  }
-}
-,
-    {
-      "id": "4",
-      "name": "Extract Notes",
+        },
+        "options": {}
+      },
+      "id": "2",
+      "name": "Prepare Prompt",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
-      "position": [950, 300],
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=YOUR_API_KEY_HERE",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonParameters": true,
+        "bodyParametersJson": "={ \"contents\": [{ \"parts\": [{ \"text\": \"' + $json.prompt + '\" }] }] }",
+        "options": {
+          "responseFormat": "json"
+        }
+      },
+      "id": "3",
+      "name": "Gemini AI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [700, 300]
+    },
+    {
       "parameters": {
         "values": {
           "string": [
             {
               "name": "notes",
-              "value": "={{$json[\"candidates\"][0][\"content\"][\"parts\"][0][\"text\"]}}"
+              "value": "={{$json.candidates[0].content.parts[0].text}}"
             }
           ]
-        }
-      }
+        },
+        "options": {}
+      },
+      "id": "4",
+      "name": "Extract Notes",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [950, 300]
     },
     {
+      "parameters": {
+        "operation": "upload",
+        "name": "={{ 'YouTube_Notes_' + Date.now() + '.txt' }}",
+        "fileContent": "={{$json.notes}}",
+        "options": {}
+      },
       "id": "5",
       "name": "Upload to Google Drive",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [1200, 300],
-      "parameters": {
-        "operation": "upload",
-        "name": "YouTube_AI_Notes.txt",
-        "parents": [],
-        "fileContent": "={{$json[\"notes\"]}}"
-      },
       "credentials": {
         "googleDriveOAuth2": {
-          "id": "GOOGLE_DRIVE_OAUTH",
-          "name": "Google Drive OAuth"
+          "id": "GOOGLE_DRIVE_OAUTH"
         }
       }
     }
@@ -102,5 +100,5 @@
       "main": [[{ "node": "Upload to Google Drive", "type": "main", "index": 0 }]]
     }
   },
-  "active": false
+  "active": true
 }
