@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>YouTube → AI Notes</title>
+</head>
+<body>
+
+  <h2>YouTube Notes Generator</h2>
+
+  <input type="text" id="url" placeholder="Paste YouTube URL here" />
+  <button onclick="send()">Generate Notes</button>
+
+  <p id="status"></p>
+
+  <script>
+    function send() {
+      const url = document.getElementById("url").value;
+
+      fetch("https://YOUR_N8N_DOMAIN/webhook/youtube-notes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ url: url })
+      })
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("status").innerText =
+          "Request sent! Notes will appear in Google Drive.";
+      })
+      .catch(err => {
+        document.getElementById("status").innerText = "Error sending request.";
+      });
+    }
+  </script>
+
+</body>
+</html>
