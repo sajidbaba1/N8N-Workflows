@@ -1,12 +1,12 @@
 {
-  "name": "YouTube URL to AI Notes (FINAL FIXED)",
+  "name": "YouTube URL to AI Notes (Direct Email)",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "POST",
         "path": "youtube-notes",
         "responseMode": "onReceived",
-        "responseData": "Successfully started! Your notes will appear in Google Drive shortly."
+        "responseData": "Workflow started! Check your email in about 1 minute."
       },
       "id": "1",
       "name": "Webhook Trigger",
@@ -51,34 +51,21 @@
     },
     {
       "parameters": {
-        "mode": "textToBinary",
-        "convertAllToBinary": false,
-        "sourceKey": "={{$json.candidates[0].content.parts[0].text}}",
-        "destinationKey": "data",
-        "options": {
-          "fileName": "={{ 'YouTube_Notes_' + Date.now() + '.txt' }}"
-        }
+        "resource": "message",
+        "subject": "📝 Your AI Video Notes",
+        "emailType": "text",
+        "message": "={{ $json.candidates[0].content.parts[0].text }}",
+        "appendAttributions": false
       },
       "id": "4",
-      "name": "Convert to File",
-      "type": "n8n-nodes-base.moveBinaryData",
-      "typeVersion": 1,
-      "position": [660, 300]
-    },
-    {
-      "parameters": {
-        "operation": "upload",
-        "fileContent": "data",
-        "options": {}
-      },
-      "id": "5",
-      "name": "Upload to Google Drive",
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
-      "position": [880, 300],
+      "name": "Send Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [660, 300],
       "credentials": {
-        "googleDriveOAuth2": {
-          "id": "GOOGLE_DRIVE_OAUTH"
+        "gmailOAuth2": {
+          "id": "GMAIL_OAUTH_ID",
+          "name": "Gmail account"
         }
       }
     }
@@ -91,10 +78,7 @@
       "main": [[{ "node": "Gemini AI", "type": "main", "index": 0 }]]
     },
     "Gemini AI": {
-      "main": [[{ "node": "Convert to File", "type": "main", "index": 0 }]]
-    },
-    "Convert to File": {
-      "main": [[{ "node": "Upload to Google Drive", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "Send Gmail", "type": "main", "index": 0 }]]
     }
   }
 }
