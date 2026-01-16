@@ -1,17 +1,18 @@
 {
-  "name": "YouTube URL to AI Notes (Fixed)",
+  "name": "YouTube URL to AI Notes (FINAL FIXED)",
   "nodes": [
     {
       "parameters": {
+        "httpMethod": "POST",
         "path": "youtube-notes",
-        "options": {},
-        "responseData": "Workflow started. Check Google Drive in a few moments."
+        "responseMode": "onReceived",
+        "responseData": "Successfully started! Your notes will appear in Google Drive shortly."
       },
       "id": "1",
       "name": "Webhook Trigger",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [200, 300]
+      "position": [0, 300]
     },
     {
       "parameters": {
@@ -19,26 +20,25 @@
           "string": [
             {
               "name": "prompt",
-              "value": "={{ 'Create detailed, structured study notes from this YouTube video. Use headings, bullet points, and examples. YouTube URL: ' + $json.url }}"
+              "value": "={{ 'Create detailed, structured study notes from this YouTube video. Use headings, bullet points, and examples. YouTube URL: ' + $json.body.url }}"
             }
           ]
-        },
-        "options": {}
+        }
       },
       "id": "2",
       "name": "Prepare Prompt",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
-      "position": [450, 300]
+      "position": [220, 300]
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=YOUR_API_KEY_HERE",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyAOwsrAHwcPJbhegjf0k3nVMH5odISFeGw",
         "sendBody": true,
         "specifyBody": "json",
         "jsonParameters": true,
-        "bodyParametersJson": "={ \"contents\": [{ \"parts\": [{ \"text\": \"' + $json.prompt + '\" }] }] }",
+        "bodyParametersJson": "={{JSON.stringify({ contents: [{ parts: [{ text: $json.prompt }] }] })}}",
         "options": {
           "responseFormat": "json"
         }
@@ -47,38 +47,35 @@
       "name": "Gemini AI",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [700, 300]
+      "position": [440, 300]
     },
     {
       "parameters": {
-        "values": {
-          "string": [
-            {
-              "name": "notes",
-              "value": "={{$json.candidates[0].content.parts[0].text}}"
-            }
-          ]
-        },
-        "options": {}
+        "mode": "textToBinary",
+        "convertAllToBinary": false,
+        "sourceKey": "={{$json.candidates[0].content.parts[0].text}}",
+        "destinationKey": "data",
+        "options": {
+          "fileName": "={{ 'YouTube_Notes_' + Date.now() + '.txt' }}"
+        }
       },
       "id": "4",
-      "name": "Extract Notes",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 2,
-      "position": [950, 300]
+      "name": "Convert to File",
+      "type": "n8n-nodes-base.moveBinaryData",
+      "typeVersion": 1,
+      "position": [660, 300]
     },
     {
       "parameters": {
         "operation": "upload",
-        "name": "={{ 'YouTube_Notes_' + Date.now() + '.txt' }}",
-        "fileContent": "={{$json.notes}}",
+        "fileContent": "data",
         "options": {}
       },
       "id": "5",
       "name": "Upload to Google Drive",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [1200, 300],
+      "position": [880, 300],
       "credentials": {
         "googleDriveOAuth2": {
           "id": "GOOGLE_DRIVE_OAUTH"
@@ -94,11 +91,10 @@
       "main": [[{ "node": "Gemini AI", "type": "main", "index": 0 }]]
     },
     "Gemini AI": {
-      "main": [[{ "node": "Extract Notes", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "Convert to File", "type": "main", "index": 0 }]]
     },
-    "Extract Notes": {
+    "Convert to File": {
       "main": [[{ "node": "Upload to Google Drive", "type": "main", "index": 0 }]]
     }
-  },
-  "active": true
+  }
 }
