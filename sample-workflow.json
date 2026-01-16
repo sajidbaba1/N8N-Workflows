@@ -1,12 +1,12 @@
 {
-  "name": "YouTube URL to AI Notes (Direct Email)",
+  "name": "YouTube AI Notes (Beautiful HTML Email)",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "POST",
         "path": "youtube-notes",
         "responseMode": "onReceived",
-        "responseData": "Workflow started! Check your email in about 1 minute."
+        "responseData": "Workflow started! Your beautiful notes are being designed and emailed..."
       },
       "id": "1",
       "name": "Webhook Trigger",
@@ -20,7 +20,7 @@
           "string": [
             {
               "name": "prompt",
-              "value": "={{ 'Create detailed, structured study notes from this YouTube video. Use headings, bullet points, and examples. YouTube URL: ' + $json.body.url }}"
+              "value": "={{ 'Create professional, high-quality study notes from this YouTube video. FORMAT: Output ONLY raw HTML (no markdown tags like ```html). Use a modern, clean design with inline CSS. Use a deep purple/blue color scheme (#6e48aa). Use <h2> for titles, <ul> for lists, and <strong> for highlights. Add nice padding and a clean border. YouTube URL: ' + $json.body.url }}"
             }
           ]
         }
@@ -34,7 +34,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyAOwsrAHwcPJbhegjf0k3nVMH5odISFeGw",
+        "url": "[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyAOwsrAHwcPJbhegjf0k3nVMH5odISFeGw](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyAOwsrAHwcPJbhegjf0k3nVMH5odISFeGw)",
         "sendBody": true,
         "specifyBody": "json",
         "jsonParameters": true,
@@ -52,10 +52,11 @@
     {
       "parameters": {
         "resource": "message",
-        "subject": "📝 Your AI Video Notes",
-        "emailType": "text",
-        "message": "={{ $json.candidates[0].content.parts[0].text }}",
-        "appendAttributions": false
+        "subject": "✨ Your AI Designed Video Notes",
+        "html": "={{ $json.candidates[0].content.parts[0].text }}",
+        "options": {
+          "appendAttributions": false
+        }
       },
       "id": "4",
       "name": "Send Gmail",
